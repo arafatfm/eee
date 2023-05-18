@@ -1,20 +1,11 @@
 class Course {
+  late String code;
   String id;
-  String name;
   int credit;
-  Course(this.name, this.id, this.credit);
-}
-
-class Duration {
-  DateTime start;
-  DateTime end;
-  Duration(this.start, this.end);
-}
-
-class Courses {
-  Course course;
   List<Duration> duration;
-  Courses(this.course, this.duration);
+  Course(this.id, this.credit, this.duration) {
+    code = id.replaceAll(RegExp(r'[^0-9]'),'');
+  }
 }
 
 const List weekDays = [
@@ -25,8 +16,17 @@ const List weekDays = [
   "Thursday"
 ];
 
-class ListViewItem {
-  String textStartTime = "";
-  String textEndTime = "";
-  Object? dropdownValue;
+class Duration {
+  String startTime = "";
+  String endTime = "";
+  String? weekDay;
 }
+
+class CalendarEvent {
+  String name;
+  DateTime time;
+  String duration;
+
+  CalendarEvent(this.name, this.time, this.duration);
+}
+var courses = List<Course>.empty(growable: true);
