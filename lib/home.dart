@@ -35,7 +35,7 @@ class _MyHomeState extends State<MyHome> {
               context,
               MaterialPageRoute(
                 builder: (context) => const CourseView(),
-              )).then((value) => setState(() {})),
+              )),
         ),
       appBar: AppBar(
         title: const Text("Routine"),
@@ -44,6 +44,7 @@ class _MyHomeState extends State<MyHome> {
       body: SizedBox(
         height: MediaQuery.of(context).size.height - kToolbarHeight,
         child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           physics: const NeverScrollableScrollPhysics(),
           children: [
             SizedBox(
@@ -113,18 +114,21 @@ class _MyHomeState extends State<MyHome> {
                     itemCount: getEvents(_selectedDay).length,
                     itemBuilder: (context, index) {
                       var course = getEvents(_selectedDay)[index];
-                      return SizedBox(
-                        height: 400,
+
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         child: ListTile(
                           title: Text(course.name),
                           trailing: Text(course.duration),
-                          onTap: () {
+                          onLongPress: () {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => CourseView(viewId: course.name),
-                                )).then((value) => setState(() {}));
+                                ));
                           },
+                          minVerticalPadding: 18,
                         ),
                       );
                     },
@@ -143,8 +147,10 @@ class _MyHomeState extends State<MyHome> {
     for (var course in courses) {
       for (var item in course.duration) {
         if (item.weekDay == DateFormat.EEEE().format(day)) {
-          var time = DateFormat('hh:mm a').parse(item.startTime);
-          var duration = "${item.startTime} ~ ${item.endTime}";
+          var start = item.startTime!.format(context).padLeft(8, '0');
+          var end = item.endTime!.format(context).padLeft(8, '0');
+          var duration = "$start ~ $end";
+          var time = DateFormat('hh:mm a').parse(start);
           list.add(CalendarEvent(course.id, time, duration));
         }
       }

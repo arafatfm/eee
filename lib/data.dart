@@ -1,7 +1,10 @@
 // ignore_for_file: avoid_print
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+class NavigationService {
+  static var navigatorKey = GlobalKey<NavigatorState>();
+}
 
 class Course {
   String myId = "$Course";
@@ -17,6 +20,7 @@ class Course {
   }) {
     code = id.replaceAll(RegExp(r'[^0-9]'), '');
   }
+  
   Map toJson() => {
     'id' : id,
     'credit' : credit,
@@ -51,25 +55,40 @@ const List weekDays = [
 class Duration {
   String myId = "$Duration";
   String? weekDay;
-  String startTime;
-  String endTime;
+  TimeOfDay? startTime;
+  TimeOfDay? endTime;
+
+  getStartTime() {
+    var context = NavigationService.navigatorKey.currentContext;
+    return (startTime==null) ? "" : startTime!.format(context!).padLeft(8, '');
+  }
+
+  getEndTime() {
+    var context = NavigationService.navigatorKey.currentContext;
+    return (endTime==null) ? "" : endTime!.format(context!).padLeft(8, '');
+  }
 
   Duration({
     this.weekDay,
-    this.startTime = '',
-    this.endTime = '',
+    this.startTime,
+    this.endTime,
   });
 
   Map toJson() => {
-    'startTime' : startTime,
-    'endTime' : endTime,
+    'startTime' : getStartTime(),
+    'endTime' : getEndTime(),
     'weekDay' : weekDay,
   };
 
+  static timeFrom(String str) {
+    var time = DateFormat('hh:mm a').parse(str);
+    return TimeOfDay.fromDateTime(time);
+  }
+
   static Duration fromJson(Map <String, dynamic> json) => Duration(
     weekDay: json['weekDay'],
-    startTime: json['startTime'],
-    endTime: json['endTime'],
+    startTime: timeFrom(json['startTime']),
+    endTime: timeFrom(json['endTime']),
   );
 }
 

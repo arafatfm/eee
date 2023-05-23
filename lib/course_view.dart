@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, void_checks
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eee/data.dart';
@@ -14,24 +14,25 @@ class CourseView extends StatefulWidget {
 }
 
 class _CourseViewState extends State<CourseView> {
-  TimeOfDay? pickedTime;
+  final idController = TextEditingController();
+  final creditController = TextEditingController();
   var listViewItems = List.filled(1, Duration(), growable: true);
-  String _id = "", _credit = "";
 
   @override
   void initState() {
     super.initState();
-    
-    if(widget.viewId != null) {
-      var course = courses[courses.indexWhere((element) => element.id == widget.viewId)];
-      _id = course.id;
-      _credit = course.credit.toString();
+
+    if (widget.viewId != null) {
+      var course =
+          courses[courses.indexWhere((element) => element.id == widget.viewId)];
+      idController.text = course.id;
+      creditController.text = course.credit.toString();
       listViewItems = course.duration;
     }
   }
 
   syncToFF() async {
-    var docRef=FirebaseFirestore.instance.collection('root').doc('courses');
+    var docRef = FirebaseFirestore.instance.collection('root').doc('courses');
     var coursesJson = {
       for (var i = 0; i < courses.length; i++)
         '${courses[i].myId} $i': courses[i].toJson()
@@ -44,7 +45,7 @@ class _CourseViewState extends State<CourseView> {
 
   @override
   Widget build(BuildContext context) {
-    const double cardHeight = 126;
+    const double cardHeight = 130;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Course Info"),
@@ -53,6 +54,7 @@ class _CourseViewState extends State<CourseView> {
         leading: IconButton(
           icon: const Icon(Icons.delete),
           onPressed: () {
+            if (widget.viewId == null) return;
             deleteCourse();
             Navigator.pop(context);
             syncToFF();
@@ -62,17 +64,28 @@ class _CourseViewState extends State<CourseView> {
           IconButton(
             icon: const Icon(Icons.check),
             onPressed: () {
-              if(_id.isEmpty || _credit.isEmpty) return;
-              if(listViewItems.isEmpty) return;
-              for(var item in listViewItems) {
-                if(item.weekDay == null) return;
-                if(item.startTime.isEmpty || item.endTime.isEmpty) return;
+              if (idController.text.isEmpty || creditController.text.isEmpty) {
+                return emptyFieldAlert();
               }
-              var index = courses.indexWhere((course) => _id.contains(course.code));
-              if(index == -1) {
+              if (listViewItems.isEmpty) return emptyFieldAlert();
+              for (var item in listViewItems) {
+                if (item.weekDay == null) return emptyFieldAlert();
+                if (item.getStartTime().isEmpty || item.getEndTime().isEmpty) {
+                  return emptyFieldAlert();
+                }
+              }
+              if (widget.viewId != null) {
+                updateCourse();
+              } else if (!courses
+                  .any((course) => idController.text.contains(course.code))) {
                 createCourse();
               } else {
-                updateCourse(index);
+                ScaffoldMessenger.of(context)
+                  ..removeCurrentSnackBar()
+                  ..showSnackBar(const SnackBar(
+                    content: Text('Course already exists'),
+                  ));
+                return;
               }
               Navigator.pop(context);
               syncToFF();
@@ -83,31 +96,29 @@ class _CourseViewState extends State<CourseView> {
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           physics: const NeverScrollableScrollPhysics(),
           children: [
-            TextField(
-              controller: TextEditingController(
-                text: _id,
-              ),
-              onChanged: (value) {
-                _id = value;
-              },
-              decoration: const InputDecoration(
-                labelText: "Course ID",
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextField(
+                controller: idController,
+                decoration: const InputDecoration(
+                  labelText: "Course ID",
+                ),
               ),
             ),
-            TextField(
-              controller: TextEditingController(
-                text: _credit,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextField(
+                controller: creditController,
+                decoration: const InputDecoration(
+                  labelText: "Course Credit",
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                maxLength: 1,
               ),
-              onChanged: (value) {
-                _credit = value;
-              },
-              decoration: const InputDecoration(
-                labelText: "Course Credit",
-              ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             ConstrainedBox(
               constraints: const BoxConstraints(
@@ -117,87 +128,108 @@ class _CourseViewState extends State<CourseView> {
                 physics: const ClampingScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: listViewItems.length,
-                itemBuilder: (context, index) => SizedBox(
-                  height: cardHeight,
-                  child: Card(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () {
-                              if(listViewItems.length > 1) {
-                                setState(() {
-                                  listViewItems.removeAt(index);
-                                });
-                              }
-                            },
-                          ),
-                          // const SizedBox(width: 20,),
-                          DropdownButton(
-                            borderRadius: BorderRadius.circular(10),
-                            hint: const Text("WeekDay"),
-                            value: listViewItems[index].weekDay,
-                            items: weekDays.map((dow) => DropdownMenuItem(
-                              value: dow,
-                              child: Text(dow),
-                            )).toList(),
-                            onChanged: (value) => setState(() {
-                              listViewItems[index].weekDay = value as String?;
-                            }),
-                          ),
-                          // const SizedBox(width: 20,),
-                          SizedBox(
-                            width: 90,
-                            child: Column(
-                              children: [
-                                TextField(
-                                  controller: TextEditingController(
-                                    text: listViewItems[index].startTime,
-                                  ),
-                                  readOnly: true,
-                                  decoration: const InputDecoration(
-                                    labelText: "Start Time",
-                                  ),
-                                  onTap: () async {
-                                    pickedTime = await showTimePicker(
-                                      context: context, 
-                                      initialTime: TimeOfDay.now(),
-                                    );
-                                    setState(() {
-                                    listViewItems[index].startTime = pickedTime!
-                                        .format(context)
-                                        .padLeft(8, '0');
-                                    });
-                                  },
-                                ),
-                                TextField(
-                                  controller: TextEditingController(
-                                    text: listViewItems[index].endTime,
-                                  ),
-                                  readOnly: true,
-                                  decoration: const InputDecoration(
-                                    labelText: "End Time"
-                                  ),
-                                  onTap: () async {
-                                    pickedTime = await showTimePicker(
-                                      context: context, 
-                                      initialTime: TimeOfDay.now(),
-                                    );
-                                    setState(() {
-                                    listViewItems[index].endTime = pickedTime!
-                                        .format(context)
-                                        .padLeft(8, '0');
-                                    });
-                                  },
-                                )
-                              ],
+                itemBuilder: (context, index) {
+                  var startTimePicker = (listViewItems[index].startTime != null)
+                      ? listViewItems[index].startTime
+                      : TimeOfDay.now();
+                  var endTimePicker = (listViewItems[index].endTime != null)
+                      ? listViewItems[index].endTime
+                      : TimeOfDay.now();
+
+                  return SizedBox(
+                    height: cardHeight,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 2,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                if (listViewItems.length > 1) {
+                                  setState(() {
+                                    listViewItems.removeAt(index);
+                                  });
+                                }
+                              },
                             ),
-                          )
-                        ],
+                            DropdownButton(
+                              borderRadius: BorderRadius.circular(10),
+                              hint: const Text("WeekDay"),
+                              value: listViewItems[index].weekDay,
+                              items: weekDays
+                                  .map((dow) => DropdownMenuItem(
+                                        value: dow,
+                                        child: Text(dow),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) => setState(() {
+                                listViewItems[index].weekDay = value as String?;
+                              }),
+                            ),
+                            const SizedBox(//empty space
+                              width: 20,
+                            ),
+                            SizedBox(
+                              width: 90,
+                              child: Column(
+                                children: [
+                                  TextField(
+                                    controller: TextEditingController(
+                                      text: listViewItems[index].getStartTime(),
+                                    ),
+                                    readOnly: true,
+                                    decoration: const InputDecoration(
+                                      labelText: "Start Time",
+                                    ),
+                                    onTap: () async {
+                                      var pickedTime = await showTimePicker(
+                                        context: context,
+                                        initialTime: startTimePicker!,
+                                      );
+                                      setState(() {
+                                        if (pickedTime != null) {
+                                          listViewItems[index].startTime =
+                                              pickedTime;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  TextField(
+                                    controller: TextEditingController(
+                                      text: listViewItems[index].getEndTime(),
+                                    ),
+                                    readOnly: true,
+                                    decoration: const InputDecoration(
+                                        labelText: "End Time"),
+                                    onTap: () async {
+                                      var pickedTime = await showTimePicker(
+                                        context: context,
+                                        initialTime: endTimePicker!,
+                                      );
+                                      setState(() {
+                                        if (pickedTime != null) {
+                                          listViewItems[index].endTime =
+                                              pickedTime;
+                                        }
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -213,19 +245,40 @@ class _CourseViewState extends State<CourseView> {
       ),
     );
   }
+
   void createCourse() {
     var course = Course(
-      id: _id,
-      credit: int.parse(_credit),
+      id: idController.text,
+      credit: int.parse(creditController.text),
       duration: listViewItems,
     );
     courses.add(course);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Course create success'),
+    ));
   }
+
   void deleteCourse() {
-    courses.removeWhere((course) => _id.contains(course.code));
+    courses.removeWhere((course) => course.id == widget.viewId);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Course delete success'),
+    ));
   }
-  void updateCourse(int index) {
-    courses[index].credit = int.parse(_credit);
+
+  void updateCourse() {
+    int index = courses.indexWhere((course) => course.id == widget.viewId);
+    courses[index].credit = int.parse(creditController.text);
     courses[index].duration = listViewItems;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Course update success'),
+    ));
   }
+
+  emptyFieldAlert() => {
+        ScaffoldMessenger.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(const SnackBar(
+            content: Text('Complete all fields'),
+          ))
+      };
 }
