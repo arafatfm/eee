@@ -15,28 +15,30 @@ class MyHome extends StatefulWidget {
 }
 
 class _MyHomeState extends State<MyHome> {
-  DateTime _selectedDay = DateTime.now();
+  final ValueNotifier<DateTime> _selectedDay = ValueNotifier(DateTime.now());
   DateTime _focusedDay = DateTime.now();
+
+  final stream = FirebaseFirestore.instance
+      .collection('root')
+      .doc('courses')
+      .snapshots()
+      .distinct();
+  final double calendarHeight = 132;
+  final double bottomNavHeight = 24;
 
   @override
   Widget build(BuildContext context) {
-    var stream = FirebaseFirestore.instance
-        .collection('root')
-        .doc('courses')
-        .snapshots()
-        .distinct();
-    const double calendarHeight = 132;
-    const double bottomNavHeight = 24;
+    print('$MyHome rebuild');
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.add),
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CourseView(),
-              )),
-        ),
+        child: const Icon(Icons.add),
+        onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CourseView(),
+            )),
+      ),
       appBar: AppBar(
         title: const Text("Routine"),
         centerTitle: true,
@@ -49,57 +51,65 @@ class _MyHomeState extends State<MyHome> {
           children: [
             SizedBox(
               height: calendarHeight,
-              child: TableCalendar(
-                focusedDay: _focusedDay,
-                firstDay: DateTime.utc(2020),
-                lastDay: DateTime.utc(2030),
-                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                onDaySelected: (selectedDay, focusedDay) => setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                }),
-                calendarFormat: CalendarFormat.week,
-                availableCalendarFormats: const {CalendarFormat.week: "Week"},
-                daysOfWeekStyle: const DaysOfWeekStyle(
-                  weekendStyle: TextStyle(color: Colors.red)),
-                weekendDays: const [DateTime.friday, DateTime.saturday],
-                calendarStyle: const CalendarStyle(
-                  weekendTextStyle: TextStyle(color: Colors.red),
-                ),
-                calendarBuilders: CalendarBuilders(
-                  headerTitleBuilder: (context, day) => Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          DateFormat.yMMM().format(DateTime.now()),
-                          style: const TextStyle(
-                            fontSize: 18,
+              child: StatefulBuilder(
+                  builder: (context, setState) => TableCalendar(
+                        focusedDay: _focusedDay,
+                        firstDay: DateTime.utc(2020),
+                        lastDay: DateTime.utc(2030),
+                        selectedDayPredicate: (day) =>
+                            isSameDay(_selectedDay.value, day),
+                        onDaySelected: (selectedDay, focusedDay) =>
+                            setState(() {
+                          _selectedDay.value = selectedDay;
+                          _focusedDay = focusedDay;
+                        }),
+                        calendarFormat: CalendarFormat.week,
+                        availableCalendarFormats: const {
+                          CalendarFormat.week: "Week"
+                        },
+                        daysOfWeekStyle: const DaysOfWeekStyle(
+                            weekendStyle: TextStyle(color: Colors.red)),
+                        weekendDays: const [DateTime.friday, DateTime.saturday],
+                        calendarStyle: const CalendarStyle(
+                          weekendTextStyle: TextStyle(color: Colors.red),
+                        ),
+                        calendarBuilders: CalendarBuilders(
+                          headerTitleBuilder: (context, day) => Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  DateFormat.yMMM().format(DateTime.now()),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                child: const Text("Today"),
+                                onPressed: () => setState(() {
+                                  _focusedDay = DateTime.now();
+                                  _selectedDay.value = DateTime.now();
+                                }),
+                              )
+                            ],
                           ),
                         ),
-                      ),
-                      TextButton(
-                        child: const Text("Today"),
-                        onPressed: () => setState(() {
-                          _focusedDay = DateTime.now();
-                          _selectedDay = DateTime.now();
-                        }),
-                      )
-                    ],
-                  ),
-                ),
-              ),
+                      )),
             ),
             ConstrainedBox(
               constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height -
-                      kToolbarHeight -
-                      calendarHeight -
-                      bottomNavHeight
+                maxHeight: MediaQuery.of(context).size.height -
+                    kToolbarHeight -
+                    calendarHeight -
+                    bottomNavHeight,
               ),
               child: StreamBuilder(
                 stream: stream,
                 builder: (context, snapshot) {
-                  if(snapshot.hasError) return const Text('Something went wrong');
+                  print('$StreamBuilder rebuild');
+                  if (snapshot.hasError) {
+                    return const Text('Something went wrong');
+                  }
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       heightFactor: 5,
@@ -107,31 +117,37 @@ class _MyHomeState extends State<MyHome> {
                     );
                   }
                   syncFromFF(snapshot);
-                  
-                  return ListView.builder(
-                    physics: const ClampingScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: getEvents(_selectedDay).length,
-                    itemBuilder: (context, index) {
-                      var course = getEvents(_selectedDay)[index];
 
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: ListTile(
-                          title: Text(course.name),
-                          trailing: Text(course.duration),
-                          onLongPress: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CourseView(viewId: course.name),
-                                ));
-                          },
-                          minVerticalPadding: 18,
-                        ),
-                      );
-                    },
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: ValueListenableBuilder(
+                        valueListenable: _selectedDay,
+                        builder: (context, value, child) {
+                          var eventList = getEvents(_selectedDay.value);
+                          return ListView.builder(
+                            physics: const ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: eventList.length,
+                            itemBuilder: (context, index) {
+                              var course = eventList[index];
+
+                              return ListTile(
+                                title: Text(course.name),
+                                trailing: Text(course.duration),
+                                onLongPress: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CourseView(viewId: course.name),
+                                      ));
+                                },
+                                minVerticalPadding: 18,
+                              );
+                            },
+                          );
+                        }),
                   );
                 },
               ),
@@ -161,9 +177,9 @@ class _MyHomeState extends State<MyHome> {
     return list;
   }
 
-  syncFromFF(var snapshot) {
+  void syncFromFF(var snapshot) {
     var list = List<Course>.empty(growable: true);
-    if (snapshot.data == null) return const Text('No Data');
+    if (snapshot.data == null) return;
     var data = snapshot.data!.data() as Map;
     for (var i = 0; i < data.length; i++) {
       list.add(Course.fromJson(data['Course $i']));

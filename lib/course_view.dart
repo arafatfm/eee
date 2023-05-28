@@ -45,7 +45,7 @@ class _CourseViewState extends State<CourseView> {
 
   @override
   Widget build(BuildContext context) {
-    const double cardHeight = 130;
+    const double itemHeight = 125;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Course Info"),
@@ -122,25 +122,26 @@ class _CourseViewState extends State<CourseView> {
             ),
             ConstrainedBox(
               constraints: const BoxConstraints(
-                maxHeight: cardHeight * 3.6,
+                maxHeight: itemHeight * 3.6,
               ),
-              child: ListView.builder(
-                physics: const ClampingScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: listViewItems.length,
-                itemBuilder: (context, index) {
-                  var startTimePicker = (listViewItems[index].startTime != null)
-                      ? listViewItems[index].startTime
-                      : TimeOfDay.now();
-                  var endTimePicker = (listViewItems[index].endTime != null)
-                      ? listViewItems[index].endTime
-                      : TimeOfDay.now();
+              child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: ListView.builder(
+                  physics: const ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: listViewItems.length,
+                  itemBuilder: (context, index) {
+                    var startTimePicker =
+                        (listViewItems[index].startTime != null)
+                            ? listViewItems[index].startTime
+                            : TimeOfDay.now();
+                    var endTimePicker = (listViewItems[index].endTime != null)
+                        ? listViewItems[index].endTime
+                        : TimeOfDay.now();
 
-                  return SizedBox(
-                    height: cardHeight,
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                    return SizedBox(
+                      height: itemHeight,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -173,7 +174,8 @@ class _CourseViewState extends State<CourseView> {
                                 listViewItems[index].weekDay = value as String?;
                               }),
                             ),
-                            const SizedBox(//empty space
+                            const SizedBox(
+                              //empty space
                               width: 20,
                             ),
                             SizedBox(
@@ -227,9 +229,9 @@ class _CourseViewState extends State<CourseView> {
                           ],
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ],
