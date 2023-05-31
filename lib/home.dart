@@ -15,7 +15,8 @@ class MyHome extends StatefulWidget {
 }
 
 class _MyHomeState extends State<MyHome> {
-  final ValueNotifier<DateTime> _selectedDay = ValueNotifier(DateTime.now());
+  final ValueNotifier<DateTime> _selectedDayNoti =
+      ValueNotifier(DateTime.now());
   DateTime _focusedDay = DateTime.now();
 
   final stream = FirebaseFirestore.instance
@@ -57,10 +58,10 @@ class _MyHomeState extends State<MyHome> {
                         firstDay: DateTime.utc(2020),
                         lastDay: DateTime.utc(2030),
                         selectedDayPredicate: (day) =>
-                            isSameDay(_selectedDay.value, day),
+                            isSameDay(_selectedDayNoti.value, day),
                         onDaySelected: (selectedDay, focusedDay) =>
                             setState(() {
-                          _selectedDay.value = selectedDay;
+                          _selectedDayNoti.value = selectedDay;
                           _focusedDay = focusedDay;
                         }),
                         calendarFormat: CalendarFormat.week,
@@ -88,7 +89,7 @@ class _MyHomeState extends State<MyHome> {
                                 child: const Text("Today"),
                                 onPressed: () => setState(() {
                                   _focusedDay = DateTime.now();
-                                  _selectedDay.value = DateTime.now();
+                                  _selectedDayNoti.value = DateTime.now();
                                 }),
                               )
                             ],
@@ -122,9 +123,9 @@ class _MyHomeState extends State<MyHome> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                     child: ValueListenableBuilder(
-                        valueListenable: _selectedDay,
+                        valueListenable: _selectedDayNoti,
                         builder: (context, value, child) {
-                          var eventList = getEvents(_selectedDay.value);
+                          var eventList = getEvents(_selectedDayNoti.value);
                           return ListView.builder(
                             physics: const ClampingScrollPhysics(),
                             shrinkWrap: true,
@@ -185,5 +186,11 @@ class _MyHomeState extends State<MyHome> {
       list.add(Course.fromJson(data['Course $i']));
     }
     courses = list;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _selectedDayNoti.dispose();
   }
 }
