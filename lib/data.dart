@@ -44,12 +44,17 @@ class Course {
   }
 }
 
-const List weekDays = [
+final List weekDays = [
   "Sunday",
   "Monday",
   "Tuesday",
   "Wednesday",
-  "Thursday"
+  "Thursday",
+];
+
+final List<int> weekendDays = [
+  DateTime.friday,
+  DateTime.saturday,
 ];
 
 class Duration {
