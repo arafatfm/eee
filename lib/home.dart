@@ -24,7 +24,7 @@ class _MyHomeState extends State<MyHome> {
       .doc('courses')
       .snapshots()
       .distinct();
-  final double calendarHeight = 132;
+  final double calendarHeight = 80;
   final double bottomNavHeight = 24;
 
   @override
@@ -47,55 +47,79 @@ class _MyHomeState extends State<MyHome> {
       body: SizedBox(
         height: MediaQuery.of(context).size.height - kToolbarHeight,
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.only(
+            top: 16,
+            left: 4,
+            right: 4,
+          ),
           physics: const NeverScrollableScrollPhysics(),
           children: [
             SizedBox(
               height: calendarHeight,
               child: StatefulBuilder(
-                  builder: (context, setState) => TableCalendar(
-                        focusedDay: _focusedDay,
-                        firstDay: DateTime.utc(2020),
-                        lastDay: DateTime.utc(2030),
-                        selectedDayPredicate: (day) =>
-                            isSameDay(_selectedDayNoti.value, day),
-                        onDaySelected: (selectedDay, focusedDay) =>
-                            setState(() {
-                          _selectedDayNoti.value = selectedDay;
-                          _focusedDay = focusedDay;
-                        }),
-                        calendarFormat: CalendarFormat.week,
-                        availableCalendarFormats: const {
-                          CalendarFormat.week: "Week"
-                        },
-                        daysOfWeekStyle: const DaysOfWeekStyle(
-                            weekendStyle: TextStyle(color: Colors.red)),
-                        weekendDays: const [DateTime.friday, DateTime.saturday],
-                        calendarStyle: const CalendarStyle(
-                          weekendTextStyle: TextStyle(color: Colors.red),
+                builder: (context, setState) => TableCalendar(
+                  focusedDay: _focusedDay,
+                  firstDay: DateTime.utc(2020),
+                  lastDay: DateTime.utc(2030),
+                  selectedDayPredicate: (day) =>
+                      isSameDay(_selectedDayNoti.value, day),
+                  onDaySelected: (selectedDay, focusedDay) => setState(() {
+                    _selectedDayNoti.value = selectedDay;
+                    _focusedDay = focusedDay;
+                  }),
+                  headerVisible: false,
+                  daysOfWeekHeight: 20,
+                  availableGestures: AvailableGestures.none,
+                  calendarFormat: CalendarFormat.week,
+                  availableCalendarFormats: const {CalendarFormat.week: "Week"},
+                  daysOfWeekStyle: const DaysOfWeekStyle(
+                    weekendStyle: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                  weekendDays: weekendDays,
+                  calendarStyle: const CalendarStyle(
+                    weekendTextStyle: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                  calendarBuilders: CalendarBuilders(
+                    outsideBuilder: (context, day, focusedDay) {
+                      TextStyle? decor;
+                      if (weekendDays.contains(day.weekday)) {
+                        decor = const TextStyle(
+                          color: Colors.red,
+                        );
+                      }
+                      return Center(
+                        child: Text(
+                          day.day.toString(),
+                          style: decor,
                         ),
-                        calendarBuilders: CalendarBuilders(
-                          headerTitleBuilder: (context, day) => Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  DateFormat.yMMM().format(DateTime.now()),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                child: const Text("Today"),
-                                onPressed: () => setState(() {
-                                  _focusedDay = DateTime.now();
-                                  _selectedDayNoti.value = DateTime.now();
-                                }),
-                              )
-                            ],
-                          ),
-                        ),
-                      )),
+                      );
+                    },
+                    //   headerTitleBuilder: (context, day) => Row(
+                    //     children: [
+                    //       Expanded(
+                    //         child: Text(
+                    //           DateFormat.yMMM().format(DateTime.now()),
+                    //           style: const TextStyle(
+                    //             fontSize: 18,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //       TextButton(
+                    //         child: const Text("Today"),
+                    //         onPressed: () => setState(() {
+                    //           _focusedDay = DateTime.now();
+                    //           _selectedDayNoti.value = DateTime.now();
+                    //         }),
+                    //       )
+                    //     ],
+                    //   ),
+                  ),
+                ),
+              ),
             ),
             ConstrainedBox(
               constraints: BoxConstraints(
