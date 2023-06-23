@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eee/course_view.dart';
 import 'package:eee/data.dart';
+import 'package:eee/sidebar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -44,6 +45,7 @@ class _MyHomeState extends State<MyHome> {
         title: const Text("Routine"),
         centerTitle: true,
       ),
+      drawer: const SideBar(),
       body: SizedBox(
         height: MediaQuery.of(context).size.height - kToolbarHeight,
         child: ListView(
