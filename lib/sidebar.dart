@@ -13,6 +13,14 @@ class SideBar extends StatelessWidget {
           TextButton(
             child: const Text('Calendar'),
             onPressed: () {
+              if(ModalRoute.of(context)?.settings.name == '/') {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (route) => false,
+                );
+              }
               
             },
           ),
@@ -25,7 +33,13 @@ class SideBar extends StatelessWidget {
           TextButton(
             child: const Text('Routine'),
             onPressed: () {
-              
+              if(ModalRoute.of(context)?.settings.name == '/routine') {
+                Navigator.of(context).pop();
+              } else if(ModalRoute.of(context)?.settings.name == '/') {
+                Navigator.of(context).popAndPushNamed('/routine');
+              } else {
+                Navigator.of(context).pushReplacementNamed('/routine');
+              }
             },
           ),
           TextButton(

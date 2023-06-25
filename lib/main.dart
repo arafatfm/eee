@@ -1,8 +1,9 @@
+import 'package:eee/calendar_view.dart';
 import 'package:eee/data.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
-import 'home.dart';
+import 'routine.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: NavigationService.navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: const MyHome(),
+      initialRoute: '/',
+      routes: {
+        '/' : (context) => const MyCalendar(),
+        '/routine' :(context) => const Routine(),
+      },
     );
   }
 }

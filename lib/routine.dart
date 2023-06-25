@@ -8,14 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class MyHome extends StatefulWidget {
-  const MyHome({super.key});
+class Routine extends StatefulWidget {
+  const Routine({super.key});
 
   @override
-  State<MyHome> createState() => _MyHomeState();
+  State<Routine> createState() => _RoutineState();
 }
 
-class _MyHomeState extends State<MyHome> {
+class _RoutineState extends State<Routine> {
   final ValueNotifier<DateTime> _selectedDayNoti =
       ValueNotifier(DateTime.now());
   DateTime _focusedDay = DateTime.now();
@@ -30,7 +30,7 @@ class _MyHomeState extends State<MyHome> {
 
   @override
   Widget build(BuildContext context) {
-    print('$MyHome rebuild');
+    print('$Routine rebuild');
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
