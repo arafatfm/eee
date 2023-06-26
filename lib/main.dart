@@ -1,4 +1,5 @@
 import 'package:eee/calendar_view.dart';
+import 'package:eee/course_view.dart';
 import 'package:eee/data.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/' : (context) => const MyCalendar(),
-        '/routine' :(context) => const Routine(),
+        '/routine' : (context) => const Routine(),
+        '/course' : (context) => const CourseView(),
       },
     );
   }

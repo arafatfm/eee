@@ -93,41 +93,43 @@ class _CourseViewState extends State<CourseView> {
           )
         ],
       ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextField(
-                controller: idController,
-                decoration: const InputDecoration(
-                  labelText: "Course ID",
-                ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: idController,
+              decoration: const InputDecoration(
+                labelText: "Course ID",
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextField(
-                controller: creditController,
-                decoration: const InputDecoration(
-                  labelText: "Course Credit",
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                maxLength: 1,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: creditController,
+              decoration: const InputDecoration(
+                labelText: "Course Credit",
               ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(1),
+              ],
             ),
-            ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: itemHeight * 3.6,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
-                child: ListView.builder(
+                child: ListView.separated(
+                  padding: const EdgeInsets.only(
+                    right: 12,
+                    bottom: 8,
+                  ),
                   physics: const ClampingScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: listViewItems.length,
@@ -139,103 +141,101 @@ class _CourseViewState extends State<CourseView> {
                     var endTimePicker = (listViewItems[index].endTime != null)
                         ? listViewItems[index].endTime
                         : TimeOfDay.now();
-
-                    return SizedBox(
-                      height: itemHeight,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 2,
+                    
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            if (listViewItems.length > 1) {
+                              setState(() {
+                                listViewItems.removeAt(index);
+                              });
+                            }
+                          },
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () {
-                                if (listViewItems.length > 1) {
+                        DropdownButton(
+                          borderRadius: BorderRadius.circular(10),
+                          hint: const Text("WeekDay"),
+                          value: listViewItems[index].weekDay,
+                          items: weekDays
+                              .map((dow) => DropdownMenuItem(
+                                    value: dow,
+                                    child: Text(dow),
+                                  ))
+                              .toList(),
+                          onChanged: (value) => setState(() {
+                            listViewItems[index].weekDay = value as String?;
+                          }),
+                        ),
+                        const SizedBox(
+                          //empty space
+                          width: 20,
+                        ),
+                        SizedBox(
+                          width: 80,
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: TextEditingController(
+                                  text: listViewItems[index].getStartTime(),
+                                ),
+                                
+                                readOnly: true,
+                                decoration: const InputDecoration(
+                                  labelText: "Start Time",
+                                ),
+                                onTap: () async {
+                                  var pickedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime: startTimePicker!,
+                                  );
                                   setState(() {
-                                    listViewItems.removeAt(index);
+                                    if (pickedTime != null) {
+                                      listViewItems[index].startTime =
+                                          pickedTime;
+                                    }
                                   });
-                                }
-                              },
-                            ),
-                            DropdownButton(
-                              borderRadius: BorderRadius.circular(10),
-                              hint: const Text("WeekDay"),
-                              value: listViewItems[index].weekDay,
-                              items: weekDays
-                                  .map((dow) => DropdownMenuItem(
-                                        value: dow,
-                                        child: Text(dow),
-                                      ))
-                                  .toList(),
-                              onChanged: (value) => setState(() {
-                                listViewItems[index].weekDay = value as String?;
-                              }),
-                            ),
-                            const SizedBox(
-                              //empty space
-                              width: 20,
-                            ),
-                            SizedBox(
-                              width: 90,
-                              child: Column(
-                                children: [
-                                  TextField(
-                                    controller: TextEditingController(
-                                      text: listViewItems[index].getStartTime(),
-                                    ),
-                                    readOnly: true,
-                                    decoration: const InputDecoration(
-                                      labelText: "Start Time",
-                                    ),
-                                    onTap: () async {
-                                      var pickedTime = await showTimePicker(
-                                        context: context,
-                                        initialTime: startTimePicker!,
-                                      );
-                                      setState(() {
-                                        if (pickedTime != null) {
-                                          listViewItems[index].startTime =
-                                              pickedTime;
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  TextField(
-                                    controller: TextEditingController(
-                                      text: listViewItems[index].getEndTime(),
-                                    ),
-                                    readOnly: true,
-                                    decoration: const InputDecoration(
-                                        labelText: "End Time"),
-                                    onTap: () async {
-                                      var pickedTime = await showTimePicker(
-                                        context: context,
-                                        initialTime: endTimePicker!,
-                                      );
-                                      setState(() {
-                                        if (pickedTime != null) {
-                                          listViewItems[index].endTime =
-                                              pickedTime;
-                                        }
-                                      });
-                                    },
-                                  )
-                                ],
+                                },
                               ),
-                            )
-                          ],
-                        ),
-                      ),
+                              TextField(
+                                controller: TextEditingController(
+                                  text: listViewItems[index].getEndTime(),
+                                ),
+                                readOnly: true,
+                                decoration: const InputDecoration(
+                                    labelText: "End Time"),
+                                onTap: () async {
+                                  var pickedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime: endTimePicker!,
+                                  );
+                                  setState(() {
+                                    if (pickedTime != null) {
+                                      listViewItems[index].endTime =
+                                          pickedTime;
+                                    }
+                                  });
+                                },
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+                  }, separatorBuilder: (BuildContext context, int index) {
+                    return const Divider(
+                      thickness: 0.75,
+                      indent: 30,
+                      endIndent: 20,
                     );
                   },
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),

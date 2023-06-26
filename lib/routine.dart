@@ -25,8 +25,6 @@ class _RoutineState extends State<Routine> {
       .doc('courses')
       .snapshots()
       .distinct();
-  final double calendarHeight = 80;
-  final double bottomNavHeight = 24;
 
   @override
   Widget build(BuildContext context) {
@@ -35,148 +33,132 @@ class _RoutineState extends State<Routine> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CourseView(),
-            )),
+        onPressed: () => Navigator.of(context).pushNamed('/course'),
       ),
       appBar: AppBar(
         title: const Text("Routine"),
         centerTitle: true,
       ),
       drawer: const SideBar(),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height - kToolbarHeight,
-        child: ListView(
-          padding: const EdgeInsets.only(
-            top: 16,
-            left: 4,
-            right: 4,
-          ),
-          physics: const NeverScrollableScrollPhysics(),
+      body: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Column(
           children: [
-            SizedBox(
-              height: calendarHeight,
-              child: StatefulBuilder(
-                builder: (context, setState) => TableCalendar(
-                  focusedDay: _focusedDay,
-                  firstDay: DateTime.utc(2020),
-                  lastDay: DateTime.utc(2030),
-                  selectedDayPredicate: (day) =>
-                      isSameDay(_selectedDayNoti.value, day),
-                  onDaySelected: (selectedDay, focusedDay) => setState(() {
-                    _selectedDayNoti.value = selectedDay;
-                    _focusedDay = focusedDay;
-                  }),
-                  headerVisible: false,
-                  daysOfWeekHeight: 20,
-                  availableGestures: AvailableGestures.none,
-                  calendarFormat: CalendarFormat.week,
-                  availableCalendarFormats: const {CalendarFormat.week: "Week"},
-                  daysOfWeekStyle: const DaysOfWeekStyle(
-                    weekendStyle: TextStyle(
-                      color: Colors.red,
-                    ),
+            StatefulBuilder(
+              builder: (context, setState) => TableCalendar(
+                focusedDay: _focusedDay,
+                firstDay: DateTime.utc(2020),
+                lastDay: DateTime.utc(2030),
+                selectedDayPredicate: (day) =>
+                    isSameDay(_selectedDayNoti.value, day),
+                onDaySelected: (selectedDay, focusedDay) => setState(() {
+                  _selectedDayNoti.value = selectedDay;
+                  _focusedDay = focusedDay;
+                }),
+                headerVisible: false,
+                daysOfWeekHeight: 20,
+                availableGestures: AvailableGestures.none,
+                calendarFormat: CalendarFormat.week,
+                availableCalendarFormats: const {CalendarFormat.week: "Week"},
+                daysOfWeekStyle: const DaysOfWeekStyle(
+                  weekendStyle: TextStyle(
+                    color: Colors.red,
                   ),
-                  weekendDays: weekendDays,
-                  calendarStyle: const CalendarStyle(
-                    weekendTextStyle: TextStyle(
-                      color: Colors.red,
-                    ),
+                ),
+                weekendDays: weekendDays,
+                calendarStyle: const CalendarStyle(
+                  weekendTextStyle: TextStyle(
+                    color: Colors.red,
                   ),
-                  calendarBuilders: CalendarBuilders(
-                    outsideBuilder: (context, day, focusedDay) {
-                      TextStyle? decor;
-                      if (weekendDays.contains(day.weekday)) {
-                        decor = const TextStyle(
-                          color: Colors.red,
-                        );
-                      }
-                      return Center(
-                        child: Text(
-                          day.day.toString(),
-                          style: decor,
-                        ),
+                ),
+                calendarBuilders: CalendarBuilders(
+                  outsideBuilder: (context, day, focusedDay) {
+                    TextStyle? decor;
+                    if (weekendDays.contains(day.weekday)) {
+                      decor = const TextStyle(
+                        color: Colors.red,
                       );
-                    },
-                    //   headerTitleBuilder: (context, day) => Row(
-                    //     children: [
-                    //       Expanded(
-                    //         child: Text(
-                    //           DateFormat.yMMM().format(DateTime.now()),
-                    //           style: const TextStyle(
-                    //             fontSize: 18,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //       TextButton(
-                    //         child: const Text("Today"),
-                    //         onPressed: () => setState(() {
-                    //           _focusedDay = DateTime.now();
-                    //           _selectedDayNoti.value = DateTime.now();
-                    //         }),
-                    //       )
-                    //     ],
-                    //   ),
-                  ),
+                    }
+                    return Center(
+                      child: Text(
+                        day.day.toString(),
+                        style: decor,
+                      ),
+                    );
+                  },
+                  //   headerTitleBuilder: (context, day) => Row(
+                  //     children: [
+                  //       Expanded(
+                  //         child: Text(
+                  //           DateFormat.yMMM().format(DateTime.now()),
+                  //           style: const TextStyle(
+                  //             fontSize: 18,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       TextButton(
+                  //         child: const Text("Today"),
+                  //         onPressed: () => setState(() {
+                  //           _focusedDay = DateTime.now();
+                  //           _selectedDayNoti.value = DateTime.now();
+                  //         }),
+                  //       )
+                  //     ],
+                  //   ),
                 ),
               ),
             ),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height -
-                    kToolbarHeight -
-                    calendarHeight -
-                    bottomNavHeight,
-              ),
-              child: StreamBuilder(
-                stream: stream,
-                builder: (context, snapshot) {
-                  print('$StreamBuilder rebuild');
-                  if (snapshot.hasError) {
-                    return const Text('Something went wrong');
-                  }
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      heightFactor: 5,
-                      child: CircularProgressIndicator(),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: StreamBuilder(
+                  stream: stream,
+                  builder: (context, snapshot) {
+                    print('$StreamBuilder rebuild');
+                    if (snapshot.hasError) {
+                      return const Text('Something went wrong');
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        heightFactor: 5,
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    syncFromFF(snapshot);
+              
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      child: ValueListenableBuilder(
+                          valueListenable: _selectedDayNoti,
+                          builder: (context, value, child) {
+                            var eventList = getEvents(_selectedDayNoti.value);
+                            return ListView.builder(
+                              physics: const ClampingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: eventList.length,
+                              itemBuilder: (context, index) {
+                                var course = eventList[index];
+              
+                                return ListTile(
+                                  title: Text(course.name),
+                                  trailing: Text(course.duration),
+                                  onLongPress: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CourseView(viewId: course.name),
+                                        ));
+                                  },
+                                  // minVerticalPadding: 18,
+                                );
+                              },
+                            );
+                          }),
                     );
-                  }
-                  syncFromFF(snapshot);
-
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    child: ValueListenableBuilder(
-                        valueListenable: _selectedDayNoti,
-                        builder: (context, value, child) {
-                          var eventList = getEvents(_selectedDayNoti.value);
-                          return ListView.builder(
-                            physics: const ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: eventList.length,
-                            itemBuilder: (context, index) {
-                              var course = eventList[index];
-
-                              return ListTile(
-                                title: Text(course.name),
-                                trailing: Text(course.duration),
-                                onLongPress: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CourseView(viewId: course.name),
-                                      ));
-                                },
-                                minVerticalPadding: 18,
-                              );
-                            },
-                          );
-                        }),
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ],
