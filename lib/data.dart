@@ -11,7 +11,7 @@ class Course {
   late String code;
   String id;
   int credit;
-  List<Duration> duration;
+  List<Period> duration;
   
   Course({
     required this.id,
@@ -32,9 +32,9 @@ class Course {
   };
 
   static fromJson(Map <String, dynamic> json) {
-    var list = List<Duration>.empty(growable: true);
+    var list = List<Period>.empty(growable: true);
     for (var i = 0; i < json['duration'].length; i++) {
-      list.add(Duration.fromJson(json['duration']['Duration $i']));
+      list.add(Period.fromJson(json['duration']['Duration $i']));
     }
     return Course(
       id: json['id'],
@@ -57,8 +57,8 @@ final List<int> weekendDays = [
   DateTime.saturday,
 ];
 
-class Duration {
-  String myId = "$Duration";
+class Period {
+  String myId = "$Period";
   String? weekDay;
   TimeOfDay? startTime;
   TimeOfDay? endTime;
@@ -73,7 +73,7 @@ class Duration {
     return (endTime==null) ? "" : endTime!.format(context!).padLeft(8, '');
   }
 
-  Duration({
+  Period({
     this.weekDay,
     this.startTime,
     this.endTime,
@@ -90,7 +90,7 @@ class Duration {
     return TimeOfDay.fromDateTime(time);
   }
 
-  static Duration fromJson(Map <String, dynamic> json) => Duration(
+  static Period fromJson(Map <String, dynamic> json) => Period(
     weekDay: json['weekDay'],
     startTime: timeFrom(json['startTime']),
     endTime: timeFrom(json['endTime']),

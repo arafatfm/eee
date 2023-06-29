@@ -16,7 +16,7 @@ class CourseView extends StatefulWidget {
 class _CourseViewState extends State<CourseView> {
   final idController = TextEditingController();
   final creditController = TextEditingController();
-  var listViewItems = List.filled(1, Duration(), growable: true);
+  var listViewItems = List.filled(1, Period(), growable: true);
 
   @override
   void initState() {
@@ -45,7 +45,6 @@ class _CourseViewState extends State<CourseView> {
 
   @override
   Widget build(BuildContext context) {
-    const double itemHeight = 125;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Course Info"),
@@ -127,8 +126,9 @@ class _CourseViewState extends State<CourseView> {
                     borderRadius: BorderRadius.circular(16)),
                 child: ListView.separated(
                   padding: const EdgeInsets.only(
-                    right: 12,
-                    bottom: 8,
+                    left: 8,
+                    right: 16,
+                    // bottom: 8,
                   ),
                   physics: const ClampingScrollPhysics(),
                   shrinkWrap: true,
@@ -155,24 +155,27 @@ class _CourseViewState extends State<CourseView> {
                             }
                           },
                         ),
-                        DropdownButton(
-                          borderRadius: BorderRadius.circular(10),
-                          hint: const Text("WeekDay"),
-                          value: listViewItems[index].weekDay,
-                          items: weekDays
-                              .map((dow) => DropdownMenuItem(
-                                    value: dow,
-                                    child: Text(dow),
-                                  ))
-                              .toList(),
-                          onChanged: (value) => setState(() {
-                            listViewItems[index].weekDay = value as String?;
-                          }),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton(
+                            // underline: const SizedBox(),
+                            borderRadius: BorderRadius.circular(10),
+                            hint: const Text("WeekDay"),
+                            value: listViewItems[index].weekDay,
+                            items: weekDays
+                                .map((dow) => DropdownMenuItem(
+                                      value: dow,
+                                      child: Text(dow),
+                                    ))
+                                .toList(),
+                            onChanged: (value) => setState(() {
+                              listViewItems[index].weekDay = value as String?;
+                            }),
+                          ),
                         ),
-                        const SizedBox(
-                          //empty space
-                          width: 20,
-                        ),
+                        // const SizedBox(
+                        //   //empty space
+                        //   width: 20,
+                        // ),
                         SizedBox(
                           width: 80,
                           child: Column(
@@ -184,6 +187,7 @@ class _CourseViewState extends State<CourseView> {
                                 
                                 readOnly: true,
                                 decoration: const InputDecoration(
+                                  border: InputBorder.none,
                                   labelText: "Start Time",
                                 ),
                                 onTap: () async {
@@ -205,7 +209,10 @@ class _CourseViewState extends State<CourseView> {
                                 ),
                                 readOnly: true,
                                 decoration: const InputDecoration(
-                                    labelText: "End Time"),
+                                  labelStyle: TextStyle(),
+                                  border: InputBorder.none,
+                                  labelText: "End Time",
+                                ),
                                 onTap: () async {
                                   var pickedTime = await showTimePicker(
                                     context: context,
@@ -241,7 +248,7 @@ class _CourseViewState extends State<CourseView> {
         child: const Icon(Icons.add),
         onPressed: () {
           setState(() {
-            listViewItems.add(Duration());
+            listViewItems.add(Period());
           });
         },
       ),

@@ -124,7 +124,7 @@ class _RoutineState extends State<Routine> {
                         child: CircularProgressIndicator(),
                       );
                     }
-                    syncFromFF(snapshot);
+                    if(snapshot.data!.data() != null) syncFromFF(snapshot);
               
                     return Card(
                       shape: RoundedRectangleBorder(
@@ -198,7 +198,7 @@ class _RoutineState extends State<Routine> {
 
   @override
   void dispose() {
-    super.dispose();
     _selectedDayNoti.dispose();
+    super.dispose();
   }
 }
