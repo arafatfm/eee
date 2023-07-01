@@ -14,19 +14,13 @@ class MyCalendar extends StatefulWidget {
   State<MyCalendar> createState() => _MyCalendarState();
 }
 
+List eventDB = List.empty(growable: true);
 class _MyCalendarState extends State<MyCalendar> {
-  List eventDB = List.empty(growable: true);
 
   final ValueNotifier<DateTime> _selectedDayNotifier =
       ValueNotifier(DateTime.now());
 
-  late final ValueNotifier changeNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    changeNotifier = ValueNotifier(eventDB.length);
-  }
+  final ValueNotifier changeNotifier = ValueNotifier(0);
 
   DateTime _focusedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.week;
@@ -185,6 +179,16 @@ class _MyCalendarState extends State<MyCalendar> {
                             
                             return ListTile(
                               title: Text(list[index]['name']),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => EventView(
+                                      date: _selectedDayNotifier.value,
+                                      docId: list[index]['docId'],
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
@@ -208,7 +212,7 @@ class _MyCalendarState extends State<MyCalendar> {
     }
     eventDB = list;
     Future.delayed(const Duration(), () {
-      changeNotifier.value = eventDB.length;
+      changeNotifier.value++;
     },);
   }
 
