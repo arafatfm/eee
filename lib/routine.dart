@@ -86,25 +86,6 @@ class _RoutineState extends State<Routine> {
                       ),
                     );
                   },
-                  //   headerTitleBuilder: (context, day) => Row(
-                  //     children: [
-                  //       Expanded(
-                  //         child: Text(
-                  //           DateFormat.yMMM().format(DateTime.now()),
-                  //           style: const TextStyle(
-                  //             fontSize: 18,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //       TextButton(
-                  //         child: const Text("Today"),
-                  //         onPressed: () => setState(() {
-                  //           _focusedDay = DateTime.now();
-                  //           _selectedDayNoti.value = DateTime.now();
-                  //         }),
-                  //       )
-                  //     ],
-                  //   ),
                 ),
               ),
             ),
