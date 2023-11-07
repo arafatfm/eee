@@ -105,41 +105,6 @@ class _MyCalendarState extends State<MyCalendar> {
                         color: Colors.red,
                       ),
                     ),
-                    // calendarBuilders: CalendarBuilders(
-                    //   outsideBuilder: (context, day, focusedDay) {
-                    //     TextStyle? decor;
-                    //     if (weekendDays.contains(day.weekday)) {
-                    //       decor = const TextStyle(
-                    //         color: Colors.red,
-                    //       );
-                    //     }
-                    //     return Center(
-                    //       child: Text(
-                    //         day.day.toString(),
-                    //         style: decor,
-                    //       ),
-                    //     );
-                    //   },
-                    //   //   headerTitleBuilder: (context, day) => Row(
-                    //   //     children: [
-                    //   //       Expanded(
-                    //   //         child: Text(
-                    //   //           DateFormat.yMMM().format(DateTime.now()),
-                    //   //           style: const TextStyle(
-                    //   //             fontSize: 18,
-                    //   //           ),
-                    //   //         ),
-                    //   //       ),
-                    //   //       TextButton(
-                    //   //         child: const Text("Today"),
-                    //   //         onPressed: () => setState(() {
-                    //   //           _focusedDay = DateTime.now();
-                    //   //           _selectedDayNoti.value = DateTime.now();
-                    //   //         }),
-                    //   //       )
-                    //   //     ],
-                    //   //   ),
-                    // ),
                   );
                 }
               );
