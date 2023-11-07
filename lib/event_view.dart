@@ -223,8 +223,9 @@ class _EventViewState extends State<EventView> {
                 context: context,
                 initialTime: TimeOfDay.now(),
               );
-              var timeString =
-                  time != null ? time.format(this.context).padLeft(8, '0') : '';
+              var timeString = time != null && context.mounted
+                  ? time.format(this.context).padLeft(8, '0')
+                  : '';
               if(timeString.isNotEmpty) {
                 if(slots.contains(timeString)) {
                   setState(() {
