@@ -34,7 +34,7 @@ class Course {
   static fromJson(Map <String, dynamic> json) {
     var list = List<Period>.empty(growable: true);
     for (var i = 0; i < json['duration'].length; i++) {
-      list.add(Period.fromJson(json['duration']['Duration $i']));
+      list.add(Period.fromJson(json['duration']['Period $i']));
     }
     return Course(
       id: json['id'],
