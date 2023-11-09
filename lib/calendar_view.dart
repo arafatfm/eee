@@ -35,6 +35,12 @@ class _MyCalendarState extends State<MyCalendar> {
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Calendar'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.replay_outlined),
+            onPressed:() => reloadRoutine(),    //to fetch classes from routine
+          ),
+        ],
       ),
       drawer: const SideBar(),
       floatingActionButton: FloatingActionButton(
@@ -177,7 +183,7 @@ class _MyCalendarState extends State<MyCalendar> {
     }
     eventDB = list;
     Future.delayed(const Duration(), () {
-      changeNotifier.value++;
+      changeNotifier.value++;   //update TableCalendar
     },);
   }
 
@@ -189,6 +195,10 @@ class _MyCalendarState extends State<MyCalendar> {
       }
     }
     return list;
+  }
+
+  void reloadRoutine() {
+    
   }
 
   @override
