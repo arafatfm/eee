@@ -31,7 +31,7 @@ class Course {
         }
   };
 
-  static fromJson(Map <String, dynamic> json) {
+  factory Course.fromJson(Map <String, dynamic> json) {   //changed static type, don't know what factory does
     var list = List<Period>.empty(growable: true);
     for (var i = 0; i < json['duration'].length; i++) {
       list.add(Period.fromJson(json['duration']['Period $i']));
