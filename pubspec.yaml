@@ -39,6 +39,7 @@ dependencies:
   intl: ^0.18.1
   firebase_core: ^2.13.0
   cloud_firestore: ^4.7.1
+  collection: ^1.17.2
 
 dependency_overrides:
 

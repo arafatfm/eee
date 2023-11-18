@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+final coursesStream =
+    FirebaseFirestore.instance.collection('courses').snapshots().distinct();    //one stream cannot be used by multiple streambuilders
+
 class Routine extends StatefulWidget {
   const Routine({super.key});
 
@@ -19,12 +22,6 @@ class _RoutineState extends State<Routine> {
   final ValueNotifier<DateTime> _selectedDayNoti =
       ValueNotifier(DateTime.now());
   DateTime _focusedDay = DateTime.now();
-
-  final stream = FirebaseFirestore.instance
-      .collection('root')
-      .doc('courses')
-      .snapshots()
-      .distinct();
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +90,7 @@ class _RoutineState extends State<Routine> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: StreamBuilder(
-                  stream: stream,
+                  stream: coursesStream,
                   builder: (context, snapshot) {
                     print('$StreamBuilder rebuild');
                     if (snapshot.hasError) {
@@ -105,22 +102,23 @@ class _RoutineState extends State<Routine> {
                         child: CircularProgressIndicator(),
                       );
                     }
-                    if(snapshot.data!.data() != null) syncFromFF(snapshot);
-              
+                    if (!snapshot.hasData) {
+                      return const Text('No data');
+                    }
                     return Card(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                       child: ValueListenableBuilder(
                           valueListenable: _selectedDayNoti,
                           builder: (context, value, child) {
-                            var eventList = getEvents(_selectedDayNoti.value);
                             return ListView.builder(
                               physics: const ClampingScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: eventList.length,
+                              itemCount: getWeekly(snapshot).length,
                               itemBuilder: (context, index) {
-                                var course = eventList[index];
-              
+                                CalendarEvent course =
+                                    getWeekly(snapshot)[index];
+
                                 return ListTile(
                                   title: Text(course.name),
                                   trailing: Text(course.duration),
@@ -129,7 +127,7 @@ class _RoutineState extends State<Routine> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              CourseView(viewId: course.name),
+                                              CourseView(ref: course.name),
                                         ));
                                   },
                                   // minVerticalPadding: 18,
@@ -148,33 +146,24 @@ class _RoutineState extends State<Routine> {
     );
   }
 
-  List getEvents(DateTime day) {
-    var list = List<CalendarEvent>.empty(growable: true);
-    for (var course in courses) {
-      for (var item in course.duration) {
-        if (item.weekDay == DateFormat.EEEE().format(day)) {
-          var start = item.startTime!.format(context).padLeft(8, '0');
-          var end = item.endTime!.format(context).padLeft(8, '0');
-          var duration = "$start ~ $end";
-          var time = DateFormat('hh:mm a').parse(start);
-          list.add(CalendarEvent(course.id, time, duration));
+  List<CalendarEvent> getWeekly(AsyncSnapshot snapshot) {
+    List<CalendarEvent> list = List.empty(growable: true);
+    for (QueryDocumentSnapshot docSnapshot in snapshot.data!.docs) {
+      for (var time in docSnapshot['time']) {
+        if (time['weekDay'] ==
+            DateFormat.EEEE().format(_selectedDayNoti.value)) {
+          var start = time['startTime'];
+          var end = time['endTime'];
+          list.add(CalendarEvent(
+            name: docSnapshot['id'],
+            duration: "$start ~ $end",
+            time: DateFormat('hh:mm a').parse(start),
+          ));
         }
       }
     }
-    list.sort(
-      (a, b) => a.time.compareTo(b.time),
-    );
+    list.sort((a, b) => a.time.compareTo(b.time));
     return list;
-  }
-
-  void syncFromFF(var snapshot) {
-    var list = List<Course>.empty(growable: true);
-    if (snapshot.data == null) return;
-    var data = snapshot.data!.data() as Map;
-    for (var i = 0; i < data.length; i++) {
-      list.add(Course.fromJson(data['Course $i']));
-    }
-    courses = list;
   }
 
   @override
